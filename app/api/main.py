@@ -11,13 +11,25 @@ from app.core.config import settings
 from app.providers.interfaces import ChatMessage, ChatRequest
 from app.providers.router import select_provider
 
-app = FastAPI(title="LLM Multi-Provider API")
+app = FastAPI(title="LLM Gateway")
 
 
 # Rate limiter
 redis = Redis.from_url(settings.redis_url, decode_responses=True)
 bucket = RedisTokenBucket(redis)
 app.add_middleware(RateLimitMiddleware, limiter_acquire=bucket.acquire)
+
+
+@app.get("/health")
+def health() -> Dict[str, str]:
+    return {"status": "ok"}
+
+
+@app.get("/providers")
+def list_providers() -> Dict[str, List[str]]:
+    from app.providers.router import get_providers
+
+    return {"providers": sorted(get_providers().keys())}
 
 
 class LlmModel(BaseModel):

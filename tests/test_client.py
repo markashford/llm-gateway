@@ -33,3 +33,15 @@ def test_chat_endpoint_invalid_provider():
     }
     response = client.post("/chat", json=payload)
     assert response.status_code == 400
+
+
+def test_health():
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "ok"
+
+
+def test_list_providers():
+    response = client.get("/providers")
+    assert response.status_code == 200
+    assert "groq" in response.json()["providers"]
